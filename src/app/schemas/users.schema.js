@@ -6,11 +6,9 @@ const UserSchema = new Schema(
 	{
 		fullname: { type: String, required: true },
 		username: { type: String, required: true },
-		password: { type: String, required: true, select: false },
-		phone: { type: String },
-		address: { type: String },
 		role: { type: String, default: "kasir" },
-		refreshToken: { type: Array, select: false },
+		password: { type: String, required: true, select: false },
+		refreshToken: { type: Array, select: false, sparse: true },
 	},
 	{
 		versionKey: false,

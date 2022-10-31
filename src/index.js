@@ -16,11 +16,11 @@ mongoose
 	.then(() => console.log("Database connected"))
 	.catch((err) => console.log(err));
 
-app.use(api);
 app.use(bodyParser.json());
+app.use(express.json());
 app.use(cookieParser());
 app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
-app.use(express.json());
+app.use(api);
 
 app.listen(port, () =>
 	console.log(`Server running at http://localhost:${port}`)

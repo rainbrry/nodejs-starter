@@ -1,4 +1,5 @@
 import User from "#model/user.model";
+import { encryptPassword } from "#helper/EncryptPassword";
 
 // Controller for the user routes
 
@@ -21,9 +22,30 @@ const UsersController = {
 
 	// Create a new user
 	store: async (req, res) => {
-		await User.create(req.body)
-			.then((user) => res.status(200).json(user))
-			.catch((err) => res.status(500).json(err));
+		const { fullname, username, role, password } = req.body;
+
+		const user = await User.findOne({ username });
+		if (user) {
+			return res.status(400).json({ message: "User already exists" });
+		}
+
+		const newUser = new User({
+			fullname,
+			username,
+			password: encryptPassword(password),
+			role,
+		});
+
+		await newUser
+			.save()
+			.then((user) => {
+				return res
+					.status(200)
+					.json({ message: "User created successfully", data: user });
+			})
+			.catch((err) => {
+				return res.status(500).json({ message: err.message });
+			});
 	},
 
 	// Update a user by id
