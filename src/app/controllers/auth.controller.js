@@ -40,7 +40,7 @@ const AuthController = {
 		user.refreshToken.push({ token: refreshToken });
 
 		// delete cookies if exist
-		if (req.cookie[`${user._id}`]) req.cookies[`${user._id}`] = null;
+		if (req.cookies[`${user._id}`]) req.cookies[`${user._id}`] = "";
 
 		// save user
 		await user
@@ -55,7 +55,9 @@ const AuthController = {
 					path: "/",
 				});
 
-				return res.status(200).json({ message: "Login success" });
+				return res
+					.status(200)
+					.json({ message: "Login success", token: refreshToken });
 			})
 			.catch((err) => {
 				return res.status(500).json({ message: err.message });
@@ -64,6 +66,39 @@ const AuthController = {
 
 	// Logout user
 	logout: async (req, res) => {},
+
+	// Refresh cookie
+	// refresh cookie for access token. This is for user who already login
+	// Access token is stored in cookies, cookies is set for 15 minutes.
+	// If cookies expired, user will be logged out automatically, and need to login again
+	// to avoid that
+	refreshCookie: async (req, res) => {
+		// get refresh token
+		// if user doesn't have refresh token, return 401
+		const refreshToken = req.headers.authorization;
+		if (!refreshToken) return res.status(401).json({ message: "Unauthorized" });
+
+		// generate new access token
+		const accessToken = await generateAccessToken({
+			id: req.userId,
+			role: req.userRole,
+		});
+
+		// delete cookies if exist
+		res.clearCookie(String(`${req.userId}`, { path: "/" }));
+		req.cookies[`${req.userId}`] = "";
+
+		// set new cookie
+		res.cookie(String(req.userId), accessToken, {
+			httpOnly: true, // only server can access the cookie
+			sameSite: "lax", // csrf
+			secure: true, // only https
+			maxAge: 900000, // 15 minutes
+			path: "/", // cookie for all path
+		});
+
+		res.status(200).json({ message: "Refreshed" });
+	},
 };
 
 export default AuthController;
