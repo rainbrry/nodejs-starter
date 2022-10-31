@@ -24,11 +24,13 @@ const UsersController = {
 	store: async (req, res) => {
 		const { fullname, username, role, password } = req.body;
 
+		// check if username already exists
 		const user = await User.findOne({ username });
 		if (user) {
 			return res.status(400).json({ message: "User already exists" });
 		}
 
+		// request
 		const newUser = new User({
 			fullname,
 			username,
@@ -36,6 +38,7 @@ const UsersController = {
 			role,
 		});
 
+		// save user to database
 		await newUser
 			.save()
 			.then((user) => {
@@ -80,14 +83,17 @@ const UsersController = {
 				// check password
 				const validPassword = verifyPassword(user.password);
 
+				// if password is not valid
 				if (currentPassword !== validPassword) {
 					return res.status(400).json({ message: "Invalid password" });
 				}
 
+				// if new password and confirm password do not match
 				if (newPassword !== confirmPassword) {
 					return res.status(400).json({ message: "Passwords do not match" });
 				}
 
+				// update password
 				user.password = encryptPassword(newPassword);
 				user.save();
 				return res.status(200).json({ message: "Password reset successfully" });
