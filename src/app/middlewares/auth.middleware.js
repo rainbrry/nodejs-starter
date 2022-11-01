@@ -8,11 +8,7 @@ export const checkUser = (req, res, next) => {
 		if (!user) {
 			return res.status(404).json({ message: "User not found" });
 		}
-
-		req.user = {
-			id: user._id,
-			role: user.role,
-		};
+		req.userRole = user.role;
 		next();
 	});
 };
@@ -30,7 +26,7 @@ export const requireAuth = (req, res, next) => {
 // only admin can access
 export const requireAdmin = (req, res, next) => {
 	checkUser(req, res, () => {
-		if (req.user.role !== "admin") {
+		if (req.userRole !== "admin") {
 			return res.status(403).json({ message: "Not allowed" });
 		}
 		next();
@@ -38,9 +34,9 @@ export const requireAdmin = (req, res, next) => {
 };
 
 // super admin
-export const requireSuperAdmin = (req, res, next) => {
+export const requireManager = (req, res, next) => {
 	checkUser(req, res, () => {
-		if (req.user.role !== "super admin") {
+		if (req.userRole !== "manager") {
 			return res.status(403).json({ message: "Not allowed" });
 		}
 		next();

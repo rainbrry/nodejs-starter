@@ -5,18 +5,23 @@ import {
 	checkUser,
 	requireAuth,
 	requireAdmin,
+	requireManager,
 } from "#middleware/auth.middleware";
+import { verifyRefreshToken } from "#middleware/token.middleware";
 
 const route = express.Router();
 
-// auth login
+// auth routes
 route.post("/login", AuthController.login);
+route.get("/getAuth", requireAuth, AuthController.getAuth);
+route.post("/refresh-token", verifyRefreshToken, AuthController.refreshCookie);
+route.post("/logout", checkUser, AuthController.logout);
 
-// For dashboard
+// dashboard
 route.get("/", (req, res) => res.send("hello"));
 
 // user routes
-route.get("/users", requireAdmin, UsersController.index);
+route.get("/users", requireManager, UsersController.index);
 route.get("/user/:id", requireAdmin, UsersController.show);
 route.post("/user", requireAdmin, UsersController.store);
 route.patch("/user/:id", requireAuth, UsersController.update);
